@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/button/index.tsx","./src/config/constants.ts","./src/config/lazy.ts","./src/config/routes.tsx","./src/context/auth-provider.tsx","./src/pages/home.tsx","./src/pages/login/index.tsx","./src/security/auth-barrier.tsx","./src/theme/hex.ts","./src/theme/index.tsx"],"version":"5.7.3"}
