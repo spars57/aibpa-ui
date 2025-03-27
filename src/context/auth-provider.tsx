@@ -1,4 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
+
+const localStorageAccessTokenKey = 'aibpa:accessToken';
+const localStorageRefreshTokenKey = 'aibpa:refreshToken';
 
 type AuthContextType = {
     authenticated: boolean;
@@ -9,7 +12,7 @@ type AuthContextType = {
     setRefreshToken: (refreshToken: string) => void;
 };
 
-const AuthContext = createContext<AuthContextType>({
+export const AuthContext = createContext<AuthContextType>({
     authenticated: false,
     accessToken: null,
     refreshToken: null,
@@ -18,12 +21,42 @@ const AuthContext = createContext<AuthContextType>({
     setRefreshToken: () => {},
 });
 
-export const useAuth = () => useContext(AuthContext);
-
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [authenticated, setAuthenticated] = useState(false);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [refreshToken, setRefreshToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        const accessToken = localStorage.getItem(localStorageAccessTokenKey);
+        const refreshToken = localStorage.getItem(localStorageRefreshTokenKey);
+        if (accessToken) {
+            const decryptedAccessToken = atob(accessToken);
+            setAuthenticated(true);
+            setAccessToken(decryptedAccessToken);
+        }
+        if (refreshToken) {
+            const decryptedRefreshToken = atob(refreshToken);
+            setRefreshToken(decryptedRefreshToken);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (accessToken) {
+            const encryptedAccessToken = btoa(accessToken);
+            localStorage.setItem(localStorageAccessTokenKey, encryptedAccessToken);
+        } else {
+            localStorage.removeItem(localStorageAccessTokenKey);
+        }
+    }, [accessToken]);
+
+    useEffect(() => {
+        if (refreshToken) {
+            const encryptedRefreshToken = btoa(refreshToken);
+            localStorage.setItem(localStorageRefreshTokenKey, encryptedRefreshToken);
+        } else {
+            localStorage.removeItem(localStorageRefreshTokenKey);
+        }
+    }, [refreshToken]);
 
     const value = { authenticated, accessToken, refreshToken, setAuthenticated, setAccessToken, setRefreshToken };
 

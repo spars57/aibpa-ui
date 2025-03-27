@@ -1,10 +1,10 @@
-import { useAuth } from '@/context/auth-provider';
+import useAuthentication from '@/hooks/use-authentication';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { ApplicationRoutesEnum } from '../config/routes';
 
 const AuthBarrier = ({ children }: { children: React.ReactNode }) => {
-    const { authenticated } = useAuth();
+    const { authenticated } = useAuthentication();
     const navigate = useNavigate();
 
     useEffect(() => {

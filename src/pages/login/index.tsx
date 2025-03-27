@@ -1,5 +1,6 @@
 import Button from '@/components/button';
-import { useAuth } from '@/context/auth-provider';
+import useApi, { ApiUrl } from '@/hooks/use-api';
+import useAuthentication from '@/hooks/use-authentication';
 import {
     Box,
     Checkbox,
@@ -19,8 +20,8 @@ import { useNavigate } from 'react-router';
 
 const LoginPage = () => {
     const theme = useTheme();
-    const { authenticated } = useAuth();
-    const [loading, setLoading] = useState(false);
+    const { authenticated, setAuthenticated, setAccessToken, setRefreshToken } = useAuthentication();
+    const { loading, performRequest } = useApi();
     const navigate = useNavigate();
 
     const [payload, setPayload] = useState({
@@ -55,7 +56,7 @@ const LoginPage = () => {
 
     const validateUsername = useCallback(() => {
         if (payload.username.length === 0) {
-            setError((prev) => ({ ...prev, username: { state: true, message: 'Username is required.' } }));
+            setError((prev) => ({ ...prev, name: { state: true, message: 'Username is required.' } }));
             return false;
         }
         if (payload.username.includes('@')) {
@@ -63,7 +64,7 @@ const LoginPage = () => {
             if (!isEmailValid) {
                 setError((prev) => ({
                     ...prev,
-                    username: { state: true, message: 'Provided email address is not valid.' },
+                    name: { state: true, message: 'Provided email address is not valid.' },
                 }));
                 return false;
             }
@@ -77,26 +78,29 @@ const LoginPage = () => {
             setError((prev) => ({ ...prev, password: { state: true, message: 'Password is required.' } }));
             return false;
         }
-        if (payload.password.length < 8) {
-            setError((prev) => ({
-                ...prev,
-                password: { state: true, message: 'Password must be at least 8 characters long.' },
-            }));
-            return false;
-        }
         setError((prev) => ({ ...prev, password: { state: false, message: '' } }));
         return true;
     }, [payload.password]);
 
-    const onSubmit = useCallback(() => {
+    const onSubmit = useCallback(async () => {
         const isUsernameValid = validateUsername();
         const isPasswordValid = validatePassword();
         if (!isUsernameValid || !isPasswordValid) return;
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-        }, 3000);
-    }, [payload]);
+        const response = await performRequest(ApiUrl.Login, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+
+        if (response) {
+            setAuthenticated(true);
+            setAccessToken(response.accessToken);
+            setRefreshToken(response.refreshToken);
+        }
+    }, [payload, performRequest]);
 
     useEffect(() => {
         if (authenticated) navigate('/');
