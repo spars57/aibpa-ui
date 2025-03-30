@@ -1,5 +1,6 @@
 import Button from '@/components/button';
-import useApi, { ApiUrl } from '@/hooks/use-api';
+import { ApplicationRoutesEnum } from '@/config/routes';
+import useApi, { Endpoint } from '@/hooks/use-api';
 import useAuthentication from '@/hooks/use-authentication';
 import {
     Box,
@@ -19,19 +20,23 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 const LoginPage = () => {
+    //----------------------------------------------------------------------------------------------
+    // Hooks
+    //----------------------------------------------------------------------------------------------
     const theme = useTheme();
-    const { authenticated, setAuthenticated, setAccessToken, setRefreshToken } = useAuthentication();
+    const { authenticated, setAuthenticated, setAccessToken } = useAuthentication();
     const { loading, performRequest } = useApi();
     const navigate = useNavigate();
-
+    //----------------------------------------------------------------------------------------------
+    // State
+    //----------------------------------------------------------------------------------------------
     const [payload, setPayload] = useState({
-        username: '',
+        email: '',
         password: '',
         rememberMe: false,
     });
-
     const [error, setError] = useState({
-        username: {
+        email: {
             state: false,
             message: '',
         },
@@ -40,7 +45,9 @@ const LoginPage = () => {
             message: '',
         },
     });
-
+    //----------------------------------------------------------------------------------------------
+    // Handlers
+    //----------------------------------------------------------------------------------------------
     const onTextFieldChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setPayload((prev) => ({ ...prev, [event.target.name]: event.target.value }));
     }, []);
@@ -48,64 +55,72 @@ const LoginPage = () => {
     const onCheckboxChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setPayload((prev) => ({ ...prev, rememberMe: event.target.checked }));
     }, []);
-
-    const validateEmail = useCallback((email: string) => {
+    //----------------------------------------------------------------------------------------------
+    // Validators
+    //----------------------------------------------------------------------------------------------
+    const validateEmailWithRegex = useCallback((email: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }, []);
 
-    const validateUsername = useCallback(() => {
-        if (payload.username.length === 0) {
-            setError((prev) => ({ ...prev, name: { state: true, message: 'Username is required.' } }));
+    const validateEmail = useCallback((email: string) => {
+        if (email.length === 0) {
+            setError((prev) => ({ ...prev, name: { state: true, message: 'Email is required.' } }));
             return false;
         }
-        if (payload.username.includes('@')) {
-            const isEmailValid = validateEmail(payload.username);
-            if (!isEmailValid) {
-                setError((prev) => ({
-                    ...prev,
-                    name: { state: true, message: 'Provided email address is not valid.' },
-                }));
-                return false;
-            }
+        const isEmailValid = validateEmailWithRegex(email);
+        if (!isEmailValid) {
+            setError((prev) => ({
+                ...prev,
+                name: { state: true, message: 'Provided email address is not valid.' },
+            }));
+            return false;
         }
-        setError((prev) => ({ ...prev, username: { state: false, message: '' } }));
+        setError((prev) => ({ ...prev, email: { state: false, message: '' } }));
         return true;
-    }, [payload.username]);
+    }, []);
 
-    const validatePassword = useCallback(() => {
-        if (payload.password.length === 0) {
+    const validatePassword = useCallback((password: string) => {
+        if (password.length === 0) {
             setError((prev) => ({ ...prev, password: { state: true, message: 'Password is required.' } }));
             return false;
         }
         setError((prev) => ({ ...prev, password: { state: false, message: '' } }));
         return true;
-    }, [payload.password]);
+    }, []);
+    //----------------------------------------------------------------------------------------------
+    // Asyncronous Handlers
+    //----------------------------------------------------------------------------------------------
+    const onSubmit = useCallback(
+        async (data: typeof payload) => {
+            const isEmailValid = validateEmail(data.email);
+            const isPasswordValid = validatePassword(data.password);
+            if (!isEmailValid || !isPasswordValid) return;
+            const body = JSON.stringify({
+                email: data.email,
+                password: data.password,
+            });
+            const response = await performRequest<{ accessToken: string }>(Endpoint.Login, {
+                method: 'POST',
+                body,
+            });
 
-    const onSubmit = useCallback(async () => {
-        const isUsernameValid = validateUsername();
-        const isPasswordValid = validatePassword();
-        if (!isUsernameValid || !isPasswordValid) return;
-        const response = await performRequest(ApiUrl.Login, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-            },
-        });
-
-        if (response) {
-            setAuthenticated(true);
-            setAccessToken(response.accessToken);
-            setRefreshToken(response.refreshToken);
-        }
-    }, [payload, performRequest]);
-
+            if (response) {
+                setAuthenticated(true);
+                setAccessToken(response.data.accessToken);
+            }
+        },
+        [performRequest, validateEmail, validatePassword],
+    );
+    //----------------------------------------------------------------------------------------------
+    // Callbacks
+    //----------------------------------------------------------------------------------------------
     useEffect(() => {
-        if (authenticated) navigate('/');
+        if (authenticated) navigate(ApplicationRoutesEnum.Home);
     }, [authenticated]);
-
+    //----------------------------------------------------------------------------------------------
+    // Render
+    //----------------------------------------------------------------------------------------------
     return (
         <Box
             display="flex"
@@ -116,7 +131,7 @@ const LoginPage = () => {
             height={'100vh'}
             onKeyDown={(event) => {
                 if (event.key === 'Enter') {
-                    onSubmit();
+                    onSubmit(payload);
                 }
             }}
             sx={{
@@ -125,21 +140,22 @@ const LoginPage = () => {
         >
             <Fade in={true} timeout={1000}>
                 <Paper sx={{ boxShadow: 3 }}>
-                    <Box display={'flex'} flexDirection={'column'} p={4} minWidth={300}>
+                    <Box display={'flex'} flexDirection={'column'} p={4} minWidth={400}>
                         <Typography variant="body1">Welcome to AIBPA</Typography>
                         <Typography variant="body2">Please provide credentials to access the platform</Typography>
                         <InputLabel sx={{ mt: 1 }}>
-                            <Typography variant="caption">Email or username</Typography>
+                            <Typography variant="caption">Email</Typography>
                         </InputLabel>
                         <TextField
-                            error={error.username.state}
+                            error={error.email.state}
+                            type="email"
                             onChange={onTextFieldChange}
-                            value={payload.username}
-                            name="username"
+                            value={payload.email}
+                            name="email"
                             size="small"
                         />
-                        <Collapse in={error.username.state}>
-                            <FormHelperText error={error.username.state}>{error.username.message}</FormHelperText>
+                        <Collapse in={error.email.state}>
+                            <FormHelperText error={error.email.state}>{error.email.message}</FormHelperText>
                         </Collapse>
                         <InputLabel>
                             <Typography variant="caption">Password</Typography>
@@ -176,13 +192,18 @@ const LoginPage = () => {
                         <Button
                             variant="contained"
                             color="primary"
-                            onClick={onSubmit}
+                            onClick={() => onSubmit(payload)}
                             loading={loading}
                             disabled={loading}
                         >
                             Login
                         </Button>
-                        <Button color="secondary" variant="contained" sx={{ mt: 1 }}>
+                        <Button
+                            color="secondary"
+                            variant="contained"
+                            sx={{ mt: 1 }}
+                            onClick={() => navigate(ApplicationRoutesEnum.Register)}
+                        >
                             Register
                         </Button>
                     </Box>

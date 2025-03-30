@@ -1,17 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import useAuthentication from './use-authentication';
 import useNotify from './use-notify';
 
 export enum HttpHeaders {
     Authorization = 'Authorization',
+    ContentType = 'Content-Type',
+    AccessControlAllowOrigin = 'Access-Control-Allow-Origin',
 }
 
-export enum ApiUrl {
+export enum Endpoint {
     Login = '/auth/login',
     Logout = '/auth/logout',
+    Register = '/auth/register',
 }
 
-const buildUrl = (url: ApiUrl) => `${import.meta.env.VITE_API_URL}${url}`;
+const buildUrl = (endpoint: Endpoint) => `${import.meta.env.VITE_API_URL}${endpoint}`;
 
 const useApi = () => {
     const { accessToken } = useAuthentication();
@@ -19,21 +22,18 @@ const useApi = () => {
 
     const [loading, setLoading] = useState(false);
 
-    const headers = useMemo(
-        () => ({
-            'Content-Type': 'application/json',
-            ...(accessToken && { [HttpHeaders.Authorization]: `Bearer ${accessToken}` }),
-        }),
-        [accessToken],
-    );
+    const headers = {
+        [HttpHeaders.ContentType]: 'application/json',
+        ...(accessToken && { [HttpHeaders.Authorization]: `Bearer ${accessToken}` }),
+    };
 
-    const performRequest = async (url: ApiUrl, options: RequestInit) => {
+    const performRequest = async <T extends unknown>(url: Endpoint, options: RequestInit) => {
         try {
             setLoading(true);
             const response = await fetch(buildUrl(url), { ...options, headers });
             const data = await response.json();
             if (response.ok) {
-                return data;
+                return { ...response, data: data as T };
             } else {
                 if (response.status === 400) {
                     notify.error('400 Bad Request', data?.message);
@@ -46,6 +46,9 @@ const useApi = () => {
                 }
                 if (response.status === 404) {
                     notify.error('404 Not Found', data?.message);
+                }
+                if (response.status === 409) {
+                    notify.error('409 Conflict', data?.message);
                 }
                 if (response.status === 422) {
                     notify.error('422 Unprocessable Entity', data?.message);
@@ -68,11 +71,11 @@ const useApi = () => {
             }
         } catch (error: any) {
             console.error(error);
-
             notify.error(error?.message, error?.status);
         } finally {
             setLoading(false);
         }
+        return null;
     };
 
     return { loading, performRequest };

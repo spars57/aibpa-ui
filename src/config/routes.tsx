@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router';
-import { LazyHomePage, LazyLoginPage } from './lazy';
+import { LazyHomePage, LazyLoginPage, LazyRegisterPage } from './lazy';
 
 export enum ApplicationRoutesEnum {
     Home = '/',
@@ -11,6 +11,7 @@ export const UnprotectedApplicationRoutes = () => {
     return (
         <Routes>
             <Route path={ApplicationRoutesEnum.Login} element={<LazyLoginPage />} />
+            <Route path={ApplicationRoutesEnum.Register} element={<LazyRegisterPage />} />
         </Routes>
     );
 };
