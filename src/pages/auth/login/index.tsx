@@ -100,15 +100,16 @@ const LoginPage = () => {
                 email: data.email,
                 password: data.password,
             });
-            const response = await performRequest<{ accessToken: string }>(Endpoint.Login, {
+            const response = await performRequest<any>(Endpoint.Login, {
                 method: 'POST',
                 body,
             });
 
-            if (response) {
+            if (response && response.ok) {
+                const text = await response.text();
+                const json = JSON.parse(text);
                 setAuthenticated(true);
-                // @ts-ignore
-                setAccessToken(response.data.accessToken);
+                setAccessToken(json.accessToken);
             }
         },
         [performRequest, validateEmail, validatePassword],

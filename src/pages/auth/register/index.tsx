@@ -37,22 +37,23 @@ const RegisterPage = () => {
     //----------------------------------------------------------------------------------------------
     const onSubmit = useCallback(
         async (data: typeof payload) => {
-            const response = await performRequest<void>(Endpoint.Register, {
+            const response = await performRequest<any>(Endpoint.Register, {
                 method: 'POST',
                 body: JSON.stringify(data),
             });
-            if (response !== null) {
-                const loginResponse = await performRequest<{ accessToken: string }>(Endpoint.Login, {
+            if (response && response.ok) {
+                const loginResponse = await performRequest<any>(Endpoint.Login, {
                     method: 'POST',
                     body: JSON.stringify({
                         email: data.email,
                         password: data.password,
                     }),
                 });
-                if (loginResponse !== null) {
+                if (loginResponse && loginResponse.ok) {
+                    const text = await loginResponse.text();
+                    const json = JSON.parse(text);
                     setAuthenticated(true);
-                    // @ts-ignore
-                    setAccessToken(loginResponse.data.accessToken);
+                    setAccessToken(json.accessToken);
                 }
             }
         },

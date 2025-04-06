@@ -3,6 +3,7 @@ import useApi, { Endpoint } from '@/hooks/use-api';
 import useAuthentication from '@/hooks/use-authentication';
 import { Box, Button, Collapse, TextField, Typography } from '@mui/material';
 import { memo, useCallback, useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router';
 
 const HomePage = () => {
@@ -10,7 +11,7 @@ const HomePage = () => {
     const { performRequest } = useApi();
     const [queryLoading, setQueryLoading] = useState(false);
     const [loginLoading, setLoginLoading] = useState(false);
-    const [question, setQuestion] = useState('');
+    const [question, setQuestion] = useState('Who is CR7?');
     const [queryResponse, setQueryResponse] = useState('');
     const navigate = useNavigate();
 
@@ -36,14 +37,17 @@ const HomePage = () => {
 
     const performQuery = useCallback(async () => {
         setQueryLoading(true);
-        const response = await performRequest<{ response: string; question: string }>(Endpoint.LangflowQuery, {
+        const response = await performRequest<any>(Endpoint.AiQuery, {
             method: 'POST',
             body: JSON.stringify({ question }),
         }).finally(() => {
             setQueryLoading(false);
         });
-        if (response) {
-            setQueryResponse(response?.data?.response);
+        if (response && response.ok) {
+            const json = await response.json();
+            const message = json.choices[0].message.content;
+            const parts = message.split('</think>');
+            setQueryResponse(parts[1]);
         }
     }, [performRequest, question]);
 
@@ -56,8 +60,12 @@ const HomePage = () => {
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
             />
-            <Collapse in={queryResponse.length > 0}>
-                <Typography variant="body1">AI Response:{queryResponse}</Typography>
+            <Collapse in={!!queryResponse}>
+                <Box sx={{ mt: 2, mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                    <Typography variant="body1" component="div">
+                        <ReactMarkdown>{queryResponse}</ReactMarkdown>
+                    </Typography>
+                </Box>
             </Collapse>
 
             <Button loading={queryLoading} variant="contained" color="primary" onClick={performQuery}>
