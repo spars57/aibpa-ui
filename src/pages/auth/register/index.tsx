@@ -51,6 +51,7 @@ const RegisterPage = () => {
                 });
                 if (loginResponse !== null) {
                     setAuthenticated(true);
+                    // @ts-ignore
                     setAccessToken(loginResponse.data.accessToken);
                 }
             }

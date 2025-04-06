@@ -107,6 +107,7 @@ const LoginPage = () => {
 
             if (response) {
                 setAuthenticated(true);
+                // @ts-ignore
                 setAccessToken(response.data.accessToken);
             }
         },
