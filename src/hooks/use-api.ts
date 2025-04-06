@@ -1,4 +1,6 @@
+import { ApplicationRoutesEnum } from '@/config/routes';
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import useAuthentication from './use-authentication';
 import useNotify from './use-notify';
 
@@ -19,6 +21,7 @@ const buildUrl = (endpoint: Endpoint) => `${import.meta.env.VITE_API_URL}${endpo
 
 const useApi = () => {
     const { accessToken } = useAuthentication();
+    const navigate = useNavigate();
     const notify = useNotify();
 
     const [loading, setLoading] = useState(false);
@@ -30,7 +33,11 @@ const useApi = () => {
 
     const handleErrors = (response: Response, data: any) => {
         if (response.status === 400) notify.error('400 Bad Request', data?.message);
-        if (response.status === 401) notify.error('401 Unauthorized', data?.message);
+        if (response.status === 401) {
+            notify.error('401 Unauthorized', data?.message);
+            localStorage.clear();
+            navigate(ApplicationRoutesEnum.Login);
+        }
         if (response.status === 403) notify.error('403 Forbidden', data?.message);
         if (response.status === 404) notify.error('404 Not Found', data?.message);
         if (response.status === 409) notify.error('409 Conflict', data?.message);
