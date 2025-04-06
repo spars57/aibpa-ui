@@ -30,12 +30,12 @@ const HomePage = () => {
     }, [performRequest, setAuthenticated, setAccessToken, navigate]);
 
     const performQuery = useCallback(async () => {
-        const response = await performRequest(Endpoint.LangflowQuery, {
+        const response = await performRequest<{ response: string; question: string }>(Endpoint.LangflowQuery, {
             method: 'POST',
             body: JSON.stringify({ question }),
         });
         if (response) {
-            setQueryResponse(response as unknown as string);
+            setQueryResponse(response?.data?.response);
         }
     }, [performRequest, question]);
 

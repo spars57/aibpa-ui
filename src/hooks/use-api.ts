@@ -46,15 +46,9 @@ const useApi = () => {
         try {
             setLoading(true);
             const response = await fetch(buildUrl(url), { ...options, headers });
-            try {
-                const data = await response.json();
-                if (response.ok) return { ...response, data: data as T };
-                handleErrors(response, data);
-            } catch (error: any) {
-                console.error(error);
-                notify.error(error?.message, error?.status);
-            }
-            return response;
+            const data = await response.json();
+            if (response.ok) return { ...response, data: data as T };
+            handleErrors(response, data);
         } catch (error: any) {
             console.error(error);
             notify.error(error?.message, error?.status);
