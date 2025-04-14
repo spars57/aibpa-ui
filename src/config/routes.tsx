@@ -1,10 +1,11 @@
 import { Route, Routes } from 'react-router';
-import { LazyHomePage, LazyLoginPage, LazyRegisterPage } from './lazy';
+import { LazyHomePage, LazyLoginPage, LazyRegisterPage, LazyForgotPage} from './lazy';
 
 export enum ApplicationRoutesEnum {
     Home = '/',
     Login = '/login',
     Register = '/register',
+    Forgot = '/forgot',
 }
 
 export const UnprotectedApplicationRoutes = () => {
@@ -12,6 +13,7 @@ export const UnprotectedApplicationRoutes = () => {
         <Routes>
             <Route path={ApplicationRoutesEnum.Login} element={<LazyLoginPage />} />
             <Route path={ApplicationRoutesEnum.Register} element={<LazyRegisterPage />} />
+            <Route path={ApplicationRoutesEnum.Forgot} element={<LazyForgotPage />} />
         </Routes>
     );
 };
