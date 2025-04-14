@@ -148,6 +148,15 @@ const RegisterPage = () => {
                         >
                             Register
                         </Button>
+
+                        <Button
+                            sx={{ mt: 1 }}
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => navigate(ApplicationRoutesEnum.Login)}
+                        >
+                            Return
+                        </Button>
                     </Box>
                 </Paper>
             </Fade>
