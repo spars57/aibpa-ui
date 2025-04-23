@@ -9,10 +9,11 @@ export enum HttpHeaders {
 }
 
 export enum Endpoint {
-    Login = '/auth/login',
-    Logout = '/auth/logout',
-    Register = '/auth/register',
+    Login = '/authentication/login',
+    Logout = '/authentication/logout',
+    Register = '/authentication/register',
     AiQuery = '/ai/query',
+    ChatHistory ='/chat/{userUuid}'
 }
 
 const buildUrl = (endpoint: Endpoint) => `${import.meta.env.VITE_API_URL}${endpoint}`;

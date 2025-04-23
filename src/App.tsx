@@ -2,11 +2,13 @@ import { ThemeProvider } from '@emotion/react';
 import { Box, CssBaseline } from '@mui/material';
 import { BrowserRouter } from 'react-router';
 import { ProtectedApplicationRoutes, UnprotectedApplicationRoutes } from './config/routes';
+import Header from './components/header';
 
 import AuthProvider from './context/auth-provider';
 import NotifyProvider from './context/notify';
 import AuthBarrier from './security/auth-barrier';
 import theme from './theme';
+import Sidebar from './components/sidebar';
 
 function App() {
     return (
@@ -15,6 +17,8 @@ function App() {
                 <NotifyProvider>
                     <AuthProvider>
                         <BrowserRouter>
+                            <Header />
+                            <Sidebar />
                             <Box
                                 bgcolor={'background.default'}
                                 display={'flex'}

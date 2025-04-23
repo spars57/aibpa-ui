@@ -1,8 +1,8 @@
 import { lazy } from 'react';
 
-const LazyLoginPage = lazy(() => import('@/pages/auth/login'));
+const LazyLoginPage = lazy(() => import('@/pages/authentication/login'));
 const LazyHomePage = lazy(() => import('@/pages/home'));
-const LazyRegisterPage = lazy(() => import('@/pages/auth/register'));
-const LazyForgotPage = lazy(() => import('@/pages/auth/forgot'))
+const LazyRegisterPage = lazy(() => import('@/pages/authentication/register'));
+const LazyForgotPage = lazy(() => import('@/pages/authentication/forgot'))
 
 export { LazyHomePage, LazyLoginPage, LazyRegisterPage, LazyForgotPage };
