@@ -1,35 +1,45 @@
 import useAuthenticationApi from '@/api/authentication';
 import { ApplicationRoutesEnum } from '@/config/routes';
 import useAuthentication from '@/hooks/use-authentication';
-import { Box, useTheme } from '@mui/material';
+import { Box, Collapse, Typography, useTheme } from '@mui/material';
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import Button from '../button';
 const Header = () => {
     const { setAuthenticated, setAccessToken, authenticated } = useAuthentication();
-    const { logout } = useAuthenticationApi();
+    const { logout, loading } = useAuthenticationApi();
     const navigate = useNavigate();
     const theme = useTheme();
 
     const handleLogout = useCallback(async () => {
         const response = await logout();
-        if (response && !response.statusCode) {
+        if (response) {
             setAuthenticated(false);
             setAccessToken(null);
             navigate(ApplicationRoutesEnum.Login);
         }
     }, [logout, setAuthenticated, setAccessToken, navigate]);
+
     return (
-        <Box display="flex" width={'100%'} justifyContent={'flex-end'} p={1} bgcolor={theme.palette.primary.main}>
-            <Button
-                color="secondary"
-                onClick={handleLogout}
-                sx={{ display: authenticated ? 'block' : 'none' }}
-                variant="contained"
+        <Collapse in={authenticated}>
+            <Box
+                display="flex"
+                width={'100%'}
+                height={'50px'}
+                justifyContent={'space-between'}
+                alignItems={'center'}
+                p={1}
+                px={2}
+                bgcolor={theme.palette.primary.main}
             >
-                Log Out
-            </Button>
-        </Box>
+                <Typography variant="h1" color={'white'}>
+                    Chat AIBPA
+                </Typography>
+                <Button color="secondary" onClick={handleLogout} variant="contained" loading={loading.logout}>
+                    Log Out
+                </Button>
+            </Box>
+        </Collapse>
     );
 };
 

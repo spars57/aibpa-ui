@@ -1,11 +1,12 @@
 import { Route, Routes } from 'react-router';
-import { LazyHomePage, LazyLoginPage, LazyRegisterPage, LazyForgotPage} from './lazy';
+import { LazyChatPage, LazyForgotPage, LazyHomePage, LazyLoginPage, LazyRegisterPage } from './lazy';
 
 export enum ApplicationRoutesEnum {
     Home = '/',
     Login = '/login',
     Register = '/register',
     Forgot = '/forgot',
+    ChatDetails = '/chat/:uuid',
 }
 
 export const UnprotectedApplicationRoutes = () => {
@@ -22,6 +23,7 @@ export const ProtectedApplicationRoutes = () => {
     return (
         <Routes>
             <Route path={ApplicationRoutesEnum.Home} element={<LazyHomePage />} />
+            <Route path={ApplicationRoutesEnum.ChatDetails} element={<LazyChatPage />} />
         </Routes>
     );
 };

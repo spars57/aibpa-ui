@@ -48,13 +48,16 @@ const useAuthenticationApi = () => {
     );
     const logout = useCallback(async () => {
         setLoading((prev) => ({ ...prev, logout: true }));
-        const response = await fetch(logoutUrl, {
-            method: 'POST',
+        await fetch(logoutUrl, {
+            method: 'GET',
             headers,
         })
-            .catch((error) => ExceptionHandler(error, notify))
+            .catch((error) => {
+                ExceptionHandler(error, notify);
+                return false;
+            })
             .finally(() => setLoading((prev) => ({ ...prev, logout: false })));
-        return response?.json();
+        return true;
     }, [logoutUrl, headers]);
 
     const register = useCallback(

@@ -8,4 +8,14 @@ export type Chat = {
     updatedAt: string;
 };
 
-export type ChatResponse = Exception | Chat[];
+export type ChatMessage = {
+    uuid: string;
+    chatUuid: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+    isAgent: boolean;
+};
+
+export type ChatResponse = Exception & Chat[];
+export type ChatMessageResponse = Exception & ChatMessage[];

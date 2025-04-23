@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useCallback, useMemo, useState } from 'react';
 import ExceptionHandler from '../exception';
 import { CreateMessageRequest } from './request';
-import { ChatResponse } from './response';
+import { ChatMessageResponse, ChatResponse } from './response';
 const URL = import.meta.env.VITE_API_URL;
 
 const useChatApi = () => {
@@ -12,7 +12,7 @@ const useChatApi = () => {
     const notify = useNotify();
     const getChatsUrl = `${URL}/chat/{userUuid}`;
     const createChatUrl = `${URL}/chat/{userUuid}`;
-    const getChatMessagesUrl = `${URL}/chat/{userUuid}/{chatUuid}`;
+    const getChatMessagesUrl = `${URL}/chat/{chatUuid}/messages`;
     const createMessageUrl = `${URL}/chat/message/create`;
 
     const decodedAccessToken = useMemo(() => {
@@ -56,18 +56,17 @@ const useChatApi = () => {
     }, [createChatUrl, headers, decodedAccessToken]);
 
     const getChatMessages = useCallback(
-        async (chatUuid: string): Promise<ChatResponse | null> => {
+        async (chatUuid: string): Promise<ChatMessageResponse | null> => {
             setLoading((prev) => ({ ...prev, getChatMessages: true }));
-            const response = await fetch(
-                getChatMessagesUrl.replace('{userUuid}', decodedAccessToken?.userUuid!).replace('{chatUuid}', chatUuid),
-                {
-                    method: 'GET',
-                    headers,
-                },
-            );
+            const response = await fetch(getChatMessagesUrl.replace('{chatUuid}', chatUuid), {
+                method: 'GET',
+                headers,
+            })
+                .catch((error) => ExceptionHandler(error, notify))
+                .finally(() => setLoading((prev) => ({ ...prev, getChatMessages: false })));
             return response?.json();
         },
-        [getChatMessagesUrl, headers, decodedAccessToken],
+        [getChatMessagesUrl, headers],
     );
 
     const createMessage = useCallback(

@@ -1,16 +1,18 @@
 import { ThemeProvider } from '@emotion/react';
 import { Box, CssBaseline } from '@mui/material';
 import { BrowserRouter } from 'react-router';
-import { ProtectedApplicationRoutes, UnprotectedApplicationRoutes } from './config/routes';
 import Header from './components/header';
+import { ProtectedApplicationRoutes, UnprotectedApplicationRoutes } from './config/routes';
 
+import Sidebar from './components/sidebar';
 import AuthProvider from './context/auth-provider';
 import NotifyProvider from './context/notify';
+import useAuthentication from './hooks/use-authentication';
 import AuthBarrier from './security/auth-barrier';
 import theme from './theme';
-import Sidebar from './components/sidebar';
 
 function App() {
+    const { authenticated } = useAuthentication();
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline>
@@ -18,18 +20,22 @@ function App() {
                     <AuthProvider>
                         <BrowserRouter>
                             <Header />
-                            <Sidebar />
-                            <Box
-                                bgcolor={'background.default'}
-                                display={'flex'}
-                                flexDirection={'column'}
-                                flexGrow={1}
-                                height={'100vh'}
-                            >
-                                <UnprotectedApplicationRoutes />
-                                <AuthBarrier>
-                                    <ProtectedApplicationRoutes />
-                                </AuthBarrier>
+                            <Box display={'flex'} height={() => (authenticated ? 'calc(100vh - 50px)' : '100vh')}>
+                                <Sidebar selectedUuid={''} />
+                                <Box
+                                    bgcolor={'secondary.light'}
+                                    display={'flex'}
+                                    flexDirection={'column'}
+                                    sx={{ overflow: 'scroll', scrollbarWidth: 'none' }}
+                                    flexGrow={1}
+                                    height={'100%'}
+                                    width={'100%'}
+                                >
+                                    <UnprotectedApplicationRoutes />
+                                    <AuthBarrier>
+                                        <ProtectedApplicationRoutes />
+                                    </AuthBarrier>
+                                </Box>
                             </Box>
                         </BrowserRouter>
                     </AuthProvider>
