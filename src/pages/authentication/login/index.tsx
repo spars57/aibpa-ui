@@ -1,6 +1,7 @@
+import useAuthenticationApi from '@/api/authentication';
+import { LoginRequest } from '@/api/authentication/request';
 import Button from '@/components/button';
 import { ApplicationRoutesEnum } from '@/config/routes';
-import useApi, { Endpoint } from '@/hooks/use-api';
 import useAuthentication from '@/hooks/use-authentication';
 import {
     Box,
@@ -25,15 +26,14 @@ const LoginPage = () => {
     //----------------------------------------------------------------------------------------------
     const theme = useTheme();
     const { authenticated, setAuthenticated, setAccessToken } = useAuthentication();
-    const { loading, performRequest } = useApi();
     const navigate = useNavigate();
+    const authenticationApi = useAuthenticationApi();
     //----------------------------------------------------------------------------------------------
     // State
     //----------------------------------------------------------------------------------------------
-    const [payload, setPayload] = useState({
+    const [payload, setPayload] = useState<LoginRequest>({
         email: '',
         password: '',
-        rememberMe: false,
     });
     const [error, setError] = useState({
         email: {
@@ -50,10 +50,6 @@ const LoginPage = () => {
     //----------------------------------------------------------------------------------------------
     const onTextFieldChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setPayload((prev) => ({ ...prev, [event.target.name]: event.target.value }));
-    }, []);
-
-    const onCheckboxChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        setPayload((prev) => ({ ...prev, rememberMe: event.target.checked }));
     }, []);
     //----------------------------------------------------------------------------------------------
     // Validators
@@ -91,34 +87,21 @@ const LoginPage = () => {
     //----------------------------------------------------------------------------------------------
     // Asyncronous Handlers
     //----------------------------------------------------------------------------------------------
-    const onSubmit = useCallback(
-        async (data: typeof payload) => {
-            const isEmailValid = validateEmail(data.email);
-            const isPasswordValid = validatePassword(data.password);
-            if (!isEmailValid || !isPasswordValid) return;
-            const body = JSON.stringify({
-                email: data.email,
-                password: data.password,
-            });
-            const response = await performRequest<any>(Endpoint.Login, {
-                method: 'POST',
-                body,
-            });
-
-            if (response && response.ok) {
-                const text = await response.text();
-                const json = JSON.parse(text);
-                setAuthenticated(true);
-                setAccessToken(json.accessToken);
-            }
-        },
-        [performRequest, validateEmail, validatePassword],
-    );
+    const onSubmit = useCallback(async () => {
+        const isEmailValid = validateEmail(payload.email);
+        const isPasswordValid = validatePassword(payload.password);
+        if (!isEmailValid || !isPasswordValid) return;
+        const response = await authenticationApi.login(payload);
+        if (response && !response.statusCode) {
+            setAuthenticated(true);
+            setAccessToken(response.accessToken);
+        }
+    }, [authenticationApi.login, validateEmail, validatePassword, setAuthenticated, setAccessToken, payload]);
     //----------------------------------------------------------------------------------------------
     // Callbacks
     //----------------------------------------------------------------------------------------------
     useEffect(() => {
-        if (authenticated) navigate(ApplicationRoutesEnum.Home);
+        if (authenticated === true) navigate(ApplicationRoutesEnum.Home);
     }, [authenticated]);
     //----------------------------------------------------------------------------------------------
     // Render
@@ -133,7 +116,7 @@ const LoginPage = () => {
             height={'100vh'}
             onKeyDown={(event) => {
                 if (event.key === 'Enter') {
-                    onSubmit(payload);
+                    onSubmit();
                 }
             }}
             sx={{
@@ -174,19 +157,12 @@ const LoginPage = () => {
                         <Collapse in={error.password.state}>
                             <FormHelperText error={error.password.state}>{error.password.message}</FormHelperText>
                         </Collapse>
-                        <Link variant="caption" color="primary" onClick={() => navigate(ApplicationRoutesEnum.Forgot) } sx={{cursor: 'pointer'}}>
+                        <Link variant="caption" color="primary" href="/forgot-password">
                             Forgot your password?
                         </Link>
                         <Box>
                             <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        color="secondary"
-                                        size="small"
-                                        value={payload.rememberMe}
-                                        onChange={onCheckboxChange}
-                                    />
-                                }
+                                control={<Checkbox color="secondary" size="small" />}
                                 label={<Typography variant="body2">Remember me</Typography>}
                             />
                         </Box>
@@ -194,9 +170,9 @@ const LoginPage = () => {
                         <Button
                             variant="contained"
                             color="primary"
-                            onClick={() => onSubmit(payload)}
-                            loading={loading}
-                            disabled={loading}
+                            onClick={onSubmit}
+                            loading={authenticationApi.loading.login}
+                            disabled={authenticationApi.loading.login}
                         >
                             Login
                         </Button>

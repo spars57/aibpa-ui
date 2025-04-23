@@ -1,6 +1,7 @@
+import useAuthenticationApi from '@/api/authentication';
+import { RegisterRequest } from '@/api/authentication/request';
 import Button from '@/components/button';
 import { ApplicationRoutesEnum } from '@/config/routes';
-import useApi, { Endpoint } from '@/hooks/use-api';
 import useAuthentication from '@/hooks/use-authentication';
 import { Box, Fade, InputLabel, Paper, TextField, Typography, useTheme } from '@mui/material';
 import { memo, useCallback, useEffect, useState } from 'react';
@@ -12,12 +13,12 @@ const RegisterPage = () => {
     //----------------------------------------------------------------------------------------------
     const theme = useTheme();
     const { authenticated, setAuthenticated, setAccessToken } = useAuthentication();
-    const { loading, performRequest } = useApi();
     const navigate = useNavigate();
+    const authenticationApi = useAuthenticationApi();
     //----------------------------------------------------------------------------------------------
     // State
     //----------------------------------------------------------------------------------------------
-    const [payload, setPayload] = useState({
+    const [payload, setPayload] = useState<RegisterRequest>({
         email: '',
         password: '',
         username: '',
@@ -35,35 +36,24 @@ const RegisterPage = () => {
     //----------------------------------------------------------------------------------------------
     // Asyncronous Handlers
     //----------------------------------------------------------------------------------------------
-    const onSubmit = useCallback(
-        async (data: typeof payload) => {
-            const response = await performRequest<any>(Endpoint.Register, {
-                method: 'POST',
-                body: JSON.stringify(data),
+    const onSubmit = useCallback(async () => {
+        const response = await authenticationApi.register(payload);
+        if (response && !response.statusCode) {
+            const loginResponse = await authenticationApi.login({
+                email: payload.email,
+                password: payload.password,
             });
-            if (response && response.ok) {
-                const loginResponse = await performRequest<any>(Endpoint.Login, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        email: data.email,
-                        password: data.password,
-                    }),
-                });
-                if (loginResponse && loginResponse.ok) {
-                    const text = await loginResponse.text();
-                    const json = JSON.parse(text);
-                    setAuthenticated(true);
-                    setAccessToken(json.accessToken);
-                }
+            if (loginResponse && !loginResponse.statusCode) {
+                setAuthenticated(true);
+                setAccessToken(loginResponse.accessToken);
             }
-        },
-        [performRequest, setAuthenticated, setAccessToken],
-    );
+        }
+    }, [authenticationApi.register, authenticationApi.login, setAuthenticated, setAccessToken, payload]);
     //----------------------------------------------------------------------------------------------
     // Callbacks
     //----------------------------------------------------------------------------------------------
     useEffect(() => {
-        if (authenticated) navigate(ApplicationRoutesEnum.Home);
+        if (authenticated === true) navigate(ApplicationRoutesEnum.Home);
     }, [authenticated]);
     //----------------------------------------------------------------------------------------------
     // Render
@@ -78,7 +68,7 @@ const RegisterPage = () => {
             height={'100vh'}
             onKeyDown={(event) => {
                 if (event.key === 'Enter') {
-                    onSubmit(payload);
+                    onSubmit();
                 }
             }}
             sx={{
@@ -142,9 +132,9 @@ const RegisterPage = () => {
                             sx={{ mt: 1 }}
                             variant="contained"
                             color="primary"
-                            onClick={() => onSubmit(payload)}
-                            loading={loading}
-                            disabled={loading}
+                            onClick={() => onSubmit()}
+                            loading={authenticationApi.loading.register || authenticationApi.loading.login}
+                            disabled={authenticationApi.loading.register || authenticationApi.loading.login}
                         >
                             Register
                         </Button>

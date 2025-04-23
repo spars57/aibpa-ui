@@ -22,6 +22,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const accessToken = localStorage.getItem(localStorageAccessTokenKey);
+        console.log('accessToken', accessToken);
         if (accessToken) {
             const decryptedAccessToken = atob(accessToken);
             setAuthenticated(true);
@@ -30,7 +31,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     useEffect(() => {
+        console.log('accessToken', accessToken);
         if (accessToken) {
+            console.log('Storing access token', accessToken);
             const encryptedAccessToken = btoa(accessToken);
             localStorage.setItem(localStorageAccessTokenKey, encryptedAccessToken);
         } else {

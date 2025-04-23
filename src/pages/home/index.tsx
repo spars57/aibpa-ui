@@ -1,4 +1,3 @@
-
 import { ApplicationRoutesEnum } from '@/config/routes';
 import useApi, { Endpoint } from '@/hooks/use-api';
 import useAuthentication from '@/hooks/use-authentication';
@@ -21,8 +20,6 @@ const HomePage = () => {
             navigate(ApplicationRoutesEnum.Login);
         }
     }, [accessToken]);
-
-    
 
     const logout = useCallback(async () => {
         setLoginLoading(true);

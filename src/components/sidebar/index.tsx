@@ -1,22 +1,19 @@
-import { memo, useEffect } from "react"
-import Button from "../button"
-import useApi, { Endpoint } from "@/hooks/use-api";
-import useAuthentication from "@/hooks/use-authentication";
+import useChatApi from '@/api/chat';
+import useAuthentication from '@/hooks/use-authentication';
+import { memo, useEffect } from 'react';
+import Button from '../button';
 
 const Sidebar = () => {
-    const {accessToken} = useAuthentication();
-    console.log(accessToken);
-    const { performRequest } = useApi();
-    const catchchat = async () => {
-        const response = await performRequest(Endpoint.ChatHistory.replace("{userUuid}", "5aa1705b-ff20-4f5f-aee4-203f287002b9") as Endpoint, {method: "GET"}).catch(e => console.error(e))
+    const { getChats } = useChatApi();
+    const { accessToken } = useAuthentication();
+    const fetchChats = async () => {
+        const response = await getChats();
+        console.log(response);
     };
     useEffect(() => {
-        if (accessToken) catchchat();
-        }, [accessToken]);
-    return(
-        <Button color="secondary">
-            hello
-        </Button>);
-}
+        if (accessToken) fetchChats();
+    }, [accessToken]);
+    return <Button color="secondary">hello</Button>;
+};
 
 export default memo(Sidebar);
