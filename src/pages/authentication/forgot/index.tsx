@@ -3,7 +3,7 @@ import { ApplicationRoutesEnum } from '@/config/routes';
 import useApi, { Endpoint } from '@/hooks/use-api';
 import useAuthentication from '@/hooks/use-authentication';
 import { Box, Collapse, Fade, FormHelperText, InputLabel, Paper, TextField, Typography, useTheme } from '@mui/material';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 const ForgotPage = () => {
@@ -11,7 +11,7 @@ const ForgotPage = () => {
     // Hooks
     //----------------------------------------------------------------------------------------------
     const theme = useTheme();
-    const { authenticated, setAuthenticated, setAccessToken } = useAuthentication();
+    const { setAuthenticated, setAccessToken } = useAuthentication();
     const { loading, performRequest } = useApi();
     const navigate = useNavigate();
     //----------------------------------------------------------------------------------------------
@@ -80,12 +80,6 @@ const ForgotPage = () => {
         },
         [performRequest, validateEmail],
     );
-    //----------------------------------------------------------------------------------------------
-    // Callbacks
-    //----------------------------------------------------------------------------------------------
-    useEffect(() => {
-        if (authenticated) navigate(ApplicationRoutesEnum.Home);
-    }, [authenticated]);
     //----------------------------------------------------------------------------------------------
     // Render
     //----------------------------------------------------------------------------------------------

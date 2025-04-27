@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router';
 import { ApplicationRoutesEnum } from '../config/routes';
 
 const AuthBarrier = ({ children }: { children: React.ReactNode }) => {
-    const { authenticated } = useAuthentication();
+    const { authenticated, loading } = useAuthentication();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!authenticated) navigate(ApplicationRoutesEnum.Login);
-    }, [authenticated]);
+        if (!authenticated && !loading) navigate(ApplicationRoutesEnum.Login);
+    }, [authenticated, loading]);
 
     return children;
 };

@@ -4,7 +4,7 @@ import Button from '@/components/button';
 import { ApplicationRoutesEnum } from '@/config/routes';
 import useAuthentication from '@/hooks/use-authentication';
 import { Box, Fade, InputLabel, Paper, TextField, Typography, useTheme } from '@mui/material';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 const RegisterPage = () => {
@@ -12,7 +12,7 @@ const RegisterPage = () => {
     // Hooks
     //----------------------------------------------------------------------------------------------
     const theme = useTheme();
-    const { authenticated, setAuthenticated, setAccessToken } = useAuthentication();
+    const { setAuthenticated, setAccessToken } = useAuthentication();
     const navigate = useNavigate();
     const authenticationApi = useAuthenticationApi();
     //----------------------------------------------------------------------------------------------
@@ -49,12 +49,6 @@ const RegisterPage = () => {
             }
         }
     }, [authenticationApi.register, authenticationApi.login, setAuthenticated, setAccessToken, payload]);
-    //----------------------------------------------------------------------------------------------
-    // Callbacks
-    //----------------------------------------------------------------------------------------------
-    useEffect(() => {
-        if (authenticated === true) navigate(ApplicationRoutesEnum.Home);
-    }, [authenticated]);
     //----------------------------------------------------------------------------------------------
     // Render
     //----------------------------------------------------------------------------------------------

@@ -1,30 +1,22 @@
 import useChatApi from '@/api/chat';
 import { Chat } from '@/api/chat/response';
-import { ApplicationRoutesEnum } from '@/config/routes';
 import useAuthentication from '@/hooks/use-authentication';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, CircularProgress, Collapse, Typography } from '@mui/material';
 import { memo, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import ChatLabel from './chat';
 
-type SidebarProps = {
-    selectedUuid: string;
-};
-
-const Sidebar = ({ selectedUuid }: SidebarProps) => {
-    const theme = useTheme();
+const Sidebar = () => {
     const { getChats } = useChatApi();
     const { accessToken, authenticated } = useAuthentication();
     const [chats, setChats] = useState<Chat[]>([]);
-    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
     const fetchChats = async () => {
+        setLoading(true);
         const response = await getChats();
         if (response && !response?.statusCode) {
             setChats(response);
         }
-    };
-
-    const onChatClick = (uuid: string) => {
-        navigate(ApplicationRoutesEnum.ChatDetails.replace(':uuid', uuid));
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -42,24 +34,19 @@ const Sidebar = ({ selectedUuid }: SidebarProps) => {
             minWidth={200}
             bgcolor={'primary.light'}
         >
-            {chats.map((chat) => (
-                <Typography
-                    sx={{
-                        p: 1,
-                        borderRadius: 1,
-                        border: `1px solid ${theme.palette.secondary.dark}`,
-                        color: 'white',
-                        '&:hover': {
-                            cursor: 'pointer',
-                            bgcolor: 'secondary.main',
-                        },
-                    }}
-                    onClick={() => onChatClick(chat.uuid)}
-                    key={chat.uuid}
-                >
-                    {chat.title}
-                </Typography>
-            ))}
+            {loading && (
+                <Box color="white" display={'flex'} justifyContent={'space-between'} p={1} alignItems={'center'}>
+                    <Typography variant="h6">Loading chats...</Typography>
+                    <CircularProgress color="inherit" size={20} />
+                </Box>
+            )}
+            <Collapse in={!loading && chats.length > 0}>
+                <Box display={'flex'} flexDirection={'column'}>
+                    {chats.map((chat) => (
+                        <ChatLabel key={chat.uuid} chat={chat} />
+                    ))}
+                </Box>
+            </Collapse>
         </Box>
     );
 };

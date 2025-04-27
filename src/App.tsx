@@ -21,7 +21,7 @@ function App() {
                         <BrowserRouter>
                             <Header />
                             <Box display={'flex'} height={() => (authenticated ? 'calc(100vh - 50px)' : '100vh')}>
-                                <Sidebar selectedUuid={''} />
+                                <Sidebar />
                                 <Box
                                     bgcolor={'secondary.light'}
                                     display={'flex'}

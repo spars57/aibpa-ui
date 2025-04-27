@@ -7,6 +7,7 @@ type AuthContextType = {
     accessToken: string | null;
     setAuthenticated: (authenticated: boolean) => void;
     setAccessToken: (accessToken: string | null) => void;
+    loading: boolean;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -14,11 +15,13 @@ export const AuthContext = createContext<AuthContextType>({
     accessToken: null,
     setAuthenticated: () => {},
     setAccessToken: () => {},
+    loading: true,
 });
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [authenticated, setAuthenticated] = useState(false);
     const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const accessToken = localStorage.getItem(localStorageAccessTokenKey);
@@ -41,7 +44,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [accessToken]);
 
-    const value = { authenticated, accessToken, setAuthenticated, setAccessToken };
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 1000);
+    }, []);
+
+    const value = { authenticated, accessToken, setAuthenticated, setAccessToken, loading };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

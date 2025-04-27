@@ -70,12 +70,12 @@ const useChatApi = () => {
     );
 
     const createMessage = useCallback(
-        async (request: CreateMessageRequest): Promise<ChatResponse | null> => {
+        async (request: Omit<CreateMessageRequest, 'userUuid'>): Promise<ChatResponse | null> => {
             setLoading((prev) => ({ ...prev, createMessage: true }));
             const response = await fetch(createMessageUrl, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify(request),
+                body: JSON.stringify({ ...request, userUuid: decodedAccessToken?.userUuid! }),
             })
                 .catch((error) => ExceptionHandler(error, notify))
                 .finally(() => setLoading((prev) => ({ ...prev, createMessage: false })));

@@ -25,7 +25,7 @@ const LoginPage = () => {
     // Hooks
     //----------------------------------------------------------------------------------------------
     const theme = useTheme();
-    const { authenticated, setAuthenticated, setAccessToken } = useAuthentication();
+    const { setAuthenticated, setAccessToken, authenticated, accessToken, loading: authLoading } = useAuthentication();
     const navigate = useNavigate();
     const authenticationApi = useAuthenticationApi();
     //----------------------------------------------------------------------------------------------
@@ -95,17 +95,16 @@ const LoginPage = () => {
         if (response && !response.statusCode) {
             setAuthenticated(true);
             setAccessToken(response.accessToken);
+            navigate(ApplicationRoutesEnum.Home);
         }
     }, [authenticationApi.login, validateEmail, validatePassword, setAuthenticated, setAccessToken, payload]);
     //----------------------------------------------------------------------------------------------
-    // Callbacks
-    //----------------------------------------------------------------------------------------------
-    useEffect(() => {
-        if (authenticated === true) navigate(ApplicationRoutesEnum.Home);
-    }, [authenticated]);
-    //----------------------------------------------------------------------------------------------
     // Render
     //----------------------------------------------------------------------------------------------
+    useEffect(() => {
+        if (authenticated && accessToken && !authLoading && window.location.pathname === ApplicationRoutesEnum.Login)
+            navigate(ApplicationRoutesEnum.Home);
+    }, [authenticated, accessToken, authLoading]);
     return (
         <Box
             display="flex"
