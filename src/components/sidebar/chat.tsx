@@ -6,7 +6,10 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router';
 
 const StyledBox = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(1),
+    paddingLeft: '14px',
+    paddingRight: '14px',
+    paddingTop: '5px',
+    paddingBottom: '5px',
     borderRadius: 5,
     border: `1px solid transparent`,
     cursor: 'pointer',

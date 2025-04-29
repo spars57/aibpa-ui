@@ -12,9 +12,9 @@ export type ChatMessage = {
     uuid: string;
     chatUuid: string;
     content: string;
-    createdAt: string;
-    updatedAt: string;
-    isAgent: boolean;
+    created_at: string;
+    updated_at: string;
+    is_agent: boolean;
 };
 
 export type ChatResponse = Exception & Chat[];

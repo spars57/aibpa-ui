@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@emotion/react';
-import { Box, CssBaseline } from '@mui/material';
+import { Box, CssBaseline, styled } from '@mui/material';
 import { BrowserRouter } from 'react-router';
 import Header from './components/header';
 import { ProtectedApplicationRoutes, UnprotectedApplicationRoutes } from './config/routes';
@@ -11,6 +11,23 @@ import useAuthentication from './hooks/use-authentication';
 import AuthBarrier from './security/auth-barrier';
 import theme from './theme';
 
+const ApplicationBox = styled(Box)(({ theme }) => ({
+    backgroundColor: theme.palette.secondary.light,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'scroll',
+    scrollbarWidth: 'none',
+    flexGrow: 1,
+    height: '100%',
+    width: '100%',
+}));
+
+const Wrapper = styled(Box)<{ authenticated: boolean }>(({ authenticated }) => ({
+    transition: 'all 3s ease',
+    display: 'flex',
+    height: authenticated ? 'calc(100vh - 50px)' : '100vh',
+}));
+
 function App() {
     const { authenticated } = useAuthentication();
     return (
@@ -20,23 +37,15 @@ function App() {
                     <AuthProvider>
                         <BrowserRouter>
                             <Header />
-                            <Box display={'flex'} height={() => (authenticated ? 'calc(100vh - 50px)' : '100vh')}>
+                            <Wrapper authenticated={authenticated}>
                                 <Sidebar />
-                                <Box
-                                    bgcolor={'secondary.light'}
-                                    display={'flex'}
-                                    flexDirection={'column'}
-                                    sx={{ overflow: 'scroll', scrollbarWidth: 'none' }}
-                                    flexGrow={1}
-                                    height={'100%'}
-                                    width={'100%'}
-                                >
+                                <ApplicationBox>
                                     <UnprotectedApplicationRoutes />
                                     <AuthBarrier>
                                         <ProtectedApplicationRoutes />
                                     </AuthBarrier>
-                                </Box>
-                            </Box>
+                                </ApplicationBox>
+                            </Wrapper>
                         </BrowserRouter>
                     </AuthProvider>
                 </NotifyProvider>

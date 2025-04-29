@@ -5,6 +5,16 @@ import { Box, CircularProgress, Collapse, Typography } from '@mui/material';
 import { memo, useEffect, useState } from 'react';
 import ChatLabel from './chat';
 
+const mockedChats: Chat[] = [
+    {
+        createdAt: new Date().toISOString(),
+        title: 'Mocked Chat',
+        updatedAt: new Date().toISOString(),
+        userUuid: '',
+        uuid: 'mocked-uuid',
+    },
+];
+
 const Sidebar = () => {
     const { getChats } = useChatApi();
     const { accessToken, authenticated } = useAuthentication();
@@ -12,11 +22,9 @@ const Sidebar = () => {
     const [loading, setLoading] = useState(true);
     const fetchChats = async () => {
         setLoading(true);
-        const response = await getChats();
-        if (response && !response?.statusCode) {
-            setChats(response);
-        }
-        setLoading(false);
+        const response = await getChats().finally(() => setLoading(false));
+        if (response && !response?.statusCode) setChats(response);
+        else setChats(mockedChats);
     };
 
     useEffect(() => {

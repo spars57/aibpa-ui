@@ -1,9 +1,31 @@
 import useChatApi from '@/api/chat';
 import { ChatMessage } from '@/api/chat/response';
 import useAuthentication from '@/hooks/use-authentication';
-import { Box, CircularProgress, Fade, TextField, Typography } from '@mui/material';
+import { Box, CircularProgress, Fade, TextField } from '@mui/material';
 import { memo, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
+import MessageBox from './message-box';
+
+const mockedMessages: ChatMessage[] = [
+    {
+        chatUuid: '',
+        content: 'Who is Cristiano Ronaldo?',
+        created_at: new Date().toISOString(),
+        is_agent: false,
+        updated_at: new Date().toISOString(),
+        uuid: '',
+    },
+    {
+        chatUuid: '',
+        content:
+            'Is a famous portuguese footballer who is considered the best in the world. This message was written to exceed the available width of the page. We expect this to get to a new line.',
+        created_at: new Date().toISOString(),
+        is_agent: true,
+        updated_at: new Date().toISOString(),
+        uuid: '',
+    },
+];
+
 const ChatPage = () => {
     const { getChatMessages, createMessage } = useChatApi();
     const { accessToken } = useAuthentication();
@@ -12,17 +34,30 @@ const ChatPage = () => {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
 
-    const fetchChatMessages = async () => {
-        setLoading(true);
+    const fetchChatMessages = async (withLoading: boolean) => {
+        setLoading(withLoading);
         const response = await getChatMessages(uuid!);
-        if (response && !response?.statusCode) {
-            setMessages(response);
-        }
+        if (response && !response?.statusCode) setMessages(response);
+        else setMessages(mockedMessages);
         setLoading(false);
     };
 
     const onSendMessage = async () => {
         if (message.length === 0) return;
+
+        //Add sent message to the list
+        setMessages([
+            ...messages,
+            {
+                chatUuid: uuid!,
+                content: message,
+                is_agent: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                uuid: '',
+            },
+        ]);
+
         const response = await createMessage({ chatUuid: uuid!, content: message });
         if (response && !response?.statusCode) {
             setMessage('');
@@ -31,9 +66,9 @@ const ChatPage = () => {
                 {
                     chatUuid: uuid!,
                     content: message,
-                    isAgent: false,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
+                    is_agent: false,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
                     uuid: '',
                 },
             ]);
@@ -42,9 +77,19 @@ const ChatPage = () => {
 
     useEffect(() => {
         if (accessToken) {
-            fetchChatMessages();
+            fetchChatMessages(true);
         }
     }, [accessToken, uuid]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (messages.length > 0) {
+                fetchChatMessages(false);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <Box display={'flex'} flexDirection={'column'} height={'calc(100vh - 50px)'} width={'100%'}>
@@ -62,25 +107,15 @@ const ChatPage = () => {
             </Fade>
             <Fade in={!loading}>
                 <Box display={'flex'} flexDirection={'column'} p={1} alignItems={'top'} height={'100%'} width={'100%'}>
-                    <Box display={'flex'} flexDirection={'column'} height={'100%'} width={'100%'}>
+                    <Box
+                        display={'flex'}
+                        flexDirection={'column'}
+                        maxHeight={'100%'}
+                        width={'100%'}
+                        sx={{ overflow: 'scroll' }}
+                    >
                         {messages.map((message) => (
-                            <Box key={message.uuid}>
-                                {message.isAgent && (
-                                    <Box>
-                                        <Typography color={'white'}>
-                                            <b>Agent:</b>
-                                            {message.content}
-                                        </Typography>
-                                    </Box>
-                                )}
-                                {!message.isAgent && (
-                                    <Box>
-                                        <Typography color={'white'}>
-                                            <b>User:</b> {message.content}
-                                        </Typography>
-                                    </Box>
-                                )}
-                            </Box>
+                            <MessageBox message={message} />
                         ))}
                     </Box>
                     <TextField
@@ -92,7 +127,26 @@ const ChatPage = () => {
                                 onSendMessage();
                             }
                         }}
-                        sx={{ width: '100%' }}
+                        sx={{
+                            width: '100%',
+                            '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                    borderColor: 'white',
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: 'white',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: 'white',
+                                },
+                            },
+                            '& .MuiInputLabel-root': {
+                                color: 'white',
+                            },
+                            '& .MuiOutlinedInput-input': {
+                                color: 'white',
+                            },
+                        }}
                     />
                 </Box>
             </Fade>
