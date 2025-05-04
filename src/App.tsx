@@ -18,11 +18,11 @@ const ApplicationBox = styled(Box)(({ theme }) => ({
     overflow: 'scroll',
     scrollbarWidth: 'none',
     flexGrow: 1,
-    height: '100%',
+    height: 'calc(100vh - 50px)',
     width: '100%',
 }));
 
-const Wrapper = styled(Box)<{ authenticated: boolean }>(({ authenticated }) => ({
+const Wrapper = styled(Box)<{ authenticated: boolean }>(({ authenticated = false }) => ({
     transition: 'all 3s ease',
     display: 'flex',
     height: authenticated ? 'calc(100vh - 50px)' : '100vh',

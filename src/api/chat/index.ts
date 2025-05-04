@@ -57,6 +57,9 @@ const useChatApi = () => {
 
     const getChatMessages = useCallback(
         async (chatUuid: string): Promise<ChatMessageResponse | null> => {
+            console.warn('getChatMessages', chatUuid);
+            console.warn('getChatMessagesUrl', getChatMessagesUrl.replace('{chatUuid}', chatUuid));
+            console.warn('headers', headers);
             setLoading((prev) => ({ ...prev, getChatMessages: true }));
             const response = await fetch(getChatMessagesUrl.replace('{chatUuid}', chatUuid), {
                 method: 'GET',

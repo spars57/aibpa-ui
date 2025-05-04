@@ -10,7 +10,6 @@ type MessageBoxProps = {
 const MessageBox = ({ message }: MessageBoxProps) => {
     const theme = useTheme();
     const date = new Date(message.created_at);
-    console.log(message);
     return (
         <Box
             display="flex"
