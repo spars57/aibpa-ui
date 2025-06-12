@@ -1,127 +1,67 @@
 import useAuthenticationApi from '@/api/authentication';
-import { LoginRequest } from '@/api/authentication/request';
 import Button from '@/components/button';
 import { ApplicationRoutesEnum } from '@/config/routes';
 import useAuthentication from '@/hooks/use-authentication';
-import {
-    Box,
-    Checkbox,
-    Collapse,
-    Fade,
-    FormControlLabel,
-    FormHelperText,
-    InputLabel,
-    Link,
-    Paper,
-    TextField,
-    Typography,
-    useTheme,
-} from '@mui/material';
+import { Box, Checkbox, Fade, FormControlLabel, InputLabel, Link, Paper, TextField, Typography } from '@mui/material';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import useValidators from '../validators';
+import { LoginResponse } from '@/api/authentication/response';
+import { LoginPayloadInitialState } from '../constants';
+import useHandlers from '../handlers';
+import { MainBox } from './styles';
 
 const LoginPage = () => {
     //----------------------------------------------------------------------------------------------
     // Hooks
     //----------------------------------------------------------------------------------------------
-    const theme = useTheme();
-    const { setAuthenticated, setAccessToken, authenticated, accessToken, loading: authLoading } = useAuthentication();
     const navigate = useNavigate();
     const authenticationApi = useAuthenticationApi();
+    const { validateLoginPayload } = useValidators();
+    const { onTextFieldChange } = useHandlers();
+    const { setAuthenticated, setAccessToken, authenticated, accessToken, loading: authLoading } = useAuthentication();
     //----------------------------------------------------------------------------------------------
     // State
     //----------------------------------------------------------------------------------------------
-    const [payload, setPayload] = useState<LoginRequest>({
-        email: '',
-        password: '',
-    });
-    const [error, setError] = useState({
-        email: {
-            state: false,
-            message: '',
-        },
-        password: {
-            state: false,
-            message: '',
-        },
-    });
-    //----------------------------------------------------------------------------------------------
-    // Handlers
-    //----------------------------------------------------------------------------------------------
-    const onTextFieldChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        setPayload((prev) => ({ ...prev, [event.target.name]: event.target.value }));
-    }, []);
-    //----------------------------------------------------------------------------------------------
-    // Validators
-    //----------------------------------------------------------------------------------------------
-    const validateEmailWithRegex = useCallback((email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }, []);
-
-    const validateEmail = useCallback((email: string) => {
-        if (email.length === 0) {
-            setError((prev) => ({ ...prev, name: { state: true, message: 'Email is required.' } }));
-            return false;
-        }
-        const isEmailValid = validateEmailWithRegex(email);
-        if (!isEmailValid) {
-            setError((prev) => ({
-                ...prev,
-                name: { state: true, message: 'Provided email address is not valid.' },
-            }));
-            return false;
-        }
-        setError((prev) => ({ ...prev, email: { state: false, message: '' } }));
-        return true;
-    }, []);
-
-    const validatePassword = useCallback((password: string) => {
-        if (password.length === 0) {
-            setError((prev) => ({ ...prev, password: { state: true, message: 'Password is required.' } }));
-            return false;
-        }
-        setError((prev) => ({ ...prev, password: { state: false, message: '' } }));
-        return true;
-    }, []);
+    const [payload, setPayload] = useState(LoginPayloadInitialState);
     //----------------------------------------------------------------------------------------------
     // Asyncronous Handlers
     //----------------------------------------------------------------------------------------------
+    const handleAfterResponse = useCallback(
+        (response: LoginResponse | null) => {
+            if (response && !response.statusCode) {
+                setAuthenticated(true);
+                setAccessToken(response.accessToken);
+                navigate(ApplicationRoutesEnum.Home);
+            }
+        },
+        [setAuthenticated, setAccessToken, navigate],
+    );
+
     const onSubmit = useCallback(async () => {
-        const isEmailValid = validateEmail(payload.email);
-        const isPasswordValid = validatePassword(payload.password);
-        if (!isEmailValid || !isPasswordValid) return;
+        if (!validateLoginPayload(payload)) return;
         const response = await authenticationApi.login(payload);
-        if (response && !response.statusCode) {
-            setAuthenticated(true);
-            setAccessToken(response.accessToken);
-            navigate(ApplicationRoutesEnum.Home);
-        }
-    }, [authenticationApi.login, validateEmail, validatePassword, setAuthenticated, setAccessToken, payload]);
+        handleAfterResponse(response);
+    }, [authenticationApi.login, validateLoginPayload, handleAfterResponse, payload]);
+
+    const onKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLDivElement>) => {
+            if (event.key === 'Enter') onSubmit();
+        },
+        [onSubmit],
+    );
     //----------------------------------------------------------------------------------------------
-    // Render
+    // Component Lifecycle
     //----------------------------------------------------------------------------------------------
     useEffect(() => {
         if (authenticated && accessToken && !authLoading && window.location.pathname === ApplicationRoutesEnum.Login)
             navigate(ApplicationRoutesEnum.Home);
     }, [authenticated, accessToken, authLoading]);
+    //----------------------------------------------------------------------------------------------
+    // Render
+    //----------------------------------------------------------------------------------------------
     return (
-        <Box
-            display="flex"
-            flexDirection={'column'}
-            alignItems={'center'}
-            justifyContent={'center'}
-            width={'100%'}
-            height={'100vh'}
-            onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                    onSubmit();
-                }
-            }}
-            sx={{
-                background: `linear-gradient(to bottom, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-            }}
-        >
+        <MainBox onKeyDown={onKeyDown}>
             <Fade in={true} timeout={1000}>
                 <Paper sx={{ boxShadow: 3 }}>
                     <Box display={'flex'} flexDirection={'column'} p={4} minWidth={400}>
@@ -131,31 +71,23 @@ const LoginPage = () => {
                             <Typography variant="caption">Email</Typography>
                         </InputLabel>
                         <TextField
-                            error={error.email.state}
                             type="email"
-                            onChange={onTextFieldChange}
+                            onChange={(event) => onTextFieldChange(event, setPayload)}
                             value={payload.email}
                             name="email"
                             size="small"
                         />
-                        <Collapse in={error.email.state}>
-                            <FormHelperText error={error.email.state}>{error.email.message}</FormHelperText>
-                        </Collapse>
                         <InputLabel>
                             <Typography variant="caption">Password</Typography>
                         </InputLabel>
                         <TextField
                             color="secondary"
-                            error={error.password.state}
-                            onChange={onTextFieldChange}
+                            onChange={(event) => onTextFieldChange(event, setPayload)}
                             value={payload.password}
                             name="password"
                             size="small"
                             type="password"
                         />
-                        <Collapse in={error.password.state}>
-                            <FormHelperText error={error.password.state}>{error.password.message}</FormHelperText>
-                        </Collapse>
                         <Link variant="caption" color="primary" href="/forgot-password">
                             Forgot your password?
                         </Link>
@@ -186,7 +118,7 @@ const LoginPage = () => {
                     </Box>
                 </Paper>
             </Fade>
-        </Box>
+        </MainBox>
     );
 };
 

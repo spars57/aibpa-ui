@@ -25,7 +25,7 @@ const ApplicationBox = styled(Box)(({ theme }) => ({
 const Wrapper = styled(Box)<{ authenticated: boolean }>(({ authenticated = false }) => ({
     transition: 'all 3s ease',
     display: 'flex',
-    height: authenticated ? 'calc(100vh - 50px)' : '100vh',
+    height: authenticated === true ? 'calc(100vh - 50px)' : '100vh',
 }));
 
 function App() {

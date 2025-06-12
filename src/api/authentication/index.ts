@@ -20,9 +20,7 @@ const useAuthenticationApi = () => {
         register: false,
     });
 
-    const transformBody = useCallback((body: any) => {
-        return JSON.stringify(body);
-    }, []);
+    const transformBody = useCallback((body: any) => JSON.stringify(body), []);
 
     const headers = useMemo(() => {
         return {
@@ -42,9 +40,15 @@ const useAuthenticationApi = () => {
             })
                 .catch((error) => ExceptionHandler(error, notify))
                 .finally(() => setLoading((prev) => ({ ...prev, login: false })));
+
+            if (response && !response.ok) {
+                notify.error('Error', 'Invalid email or password');
+                return null;
+            }
+
             return response?.json();
         },
-        [loginUrl, headers],
+        [loginUrl, headers, notify],
     );
     const logout = useCallback(async () => {
         setLoading((prev) => ({ ...prev, logout: true }));
@@ -58,7 +62,7 @@ const useAuthenticationApi = () => {
             })
             .finally(() => setLoading((prev) => ({ ...prev, logout: false })));
         return true;
-    }, [logoutUrl, headers]);
+    }, [logoutUrl, headers, notify]);
 
     const register = useCallback(
         async (request: RegisterRequest): Promise<RegisterResponse | null> => {
@@ -71,9 +75,14 @@ const useAuthenticationApi = () => {
             })
                 .catch((error) => ExceptionHandler(error, notify))
                 .finally(() => setLoading((prev) => ({ ...prev, register: false })));
+
+            if (response && !response.ok) {
+                notify.error('Error', 'Failed to register user');
+                return null;
+            }
             return response?.json();
         },
-        [registerUrl, headers],
+        [registerUrl, headers, notify],
     );
 
     return { login, logout, register, loading };
