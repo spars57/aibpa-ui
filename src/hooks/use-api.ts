@@ -13,7 +13,7 @@ export enum Endpoint {
     Logout = '/authentication/logout',
     Register = '/authentication/register',
     AiQuery = '/ai/query',
-    ChatHistory = '/chat/{userUuid}',
+    ChatWithUserUUID = '/chat/{userUuid}',
 }
 
 const buildUrl = (endpoint: Endpoint) => `${import.meta.env.VITE_API_URL}${endpoint}`;
