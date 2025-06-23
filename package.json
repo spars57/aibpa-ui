@@ -7,7 +7,9 @@
         "dev": "vite --port 3000",
         "build": "tsc --skipLibCheck && vite build",
         "lint": "eslint .",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "docker:build": "docker build -t brumoisao/aibpa-ui .",
+        "docker:run": "docker run -p 3000:3000 brumoisao/aibpa-ui"
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
