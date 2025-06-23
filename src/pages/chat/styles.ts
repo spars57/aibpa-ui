@@ -1,11 +1,10 @@
 import { Box, CircularProgress, Fade, styled, TextField } from '@mui/material';
 
-export const MainBox = styled(Box)(({ theme }) => ({
+export const MainBox = styled(Box)(() => ({
     display: 'flex',
     flexDirection: 'column',
     height: 'calc(100vh - 50px)',
     width: '100%',
-    border: `1px solid ${theme.palette.error.main}`,
 }));
 
 export const LoadingBox = styled(Box)(({ theme }) => ({
