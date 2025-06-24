@@ -9,7 +9,7 @@
         "lint": "eslint .",
         "preview": "vite preview",
         "docker:build": "docker build -t brumoisao/aibpa-ui .",
-        "docker:run": "docker run -p 3000:3000 brumoisao/aibpa-ui"
+        "docker:push": "docker push brumoisao/aibpa-ui"
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
