@@ -18,7 +18,7 @@ const ApplicationBox = styled(Box)(({ theme }) => ({
     overflow: 'hidden',
     scrollbarWidth: 'none',
     flexGrow: 1,
-    height: 'calc(100vh - 50px)',
+    minHeight: 0,
     width: '100%',
 }));
 
@@ -26,7 +26,7 @@ const Wrapper = styled(Box)<{ authenticated: boolean }>(({ authenticated = false
     transition: 'all 3s ease',
     display: 'flex',
     overflow: 'hidden',
-    height: authenticated === true ? 'calc(100vh - 50px)' : '100vh',
+    flexGrow: authenticated === true ? 'calc(100vh - 50px)' : '100vh',
 }));
 
 function App() {

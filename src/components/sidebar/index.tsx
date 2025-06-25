@@ -49,7 +49,8 @@ const Sidebar = () => {
             p={1}
             gap={0.24}
             minWidth={200}
-            height={'calc(100vh - 50px)'}
+            flexGrow={1}
+            minHeight={0}
             bgcolor={'primary.light'}
         >
             {loading && (
